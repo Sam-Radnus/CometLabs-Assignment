@@ -32,7 +32,7 @@ mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopol
 app.post("/api/signup", signup)
 app.post("/api/login", login)
 app.post("/api/test", test)
-app.post("/api/questions/:questionId/submit", submitSolution)
+app.post("/api/questions/submit", submitSolution)
 
 /* ROUTES FOR ADMIN ONLY  */
 

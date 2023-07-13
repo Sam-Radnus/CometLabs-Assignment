@@ -307,27 +307,60 @@ export const submitSolution = async (req, res) => {
     try {
       const accessToken = process.env.ACCESS_TOKEN;
       const endpoint = process.env.ENDPOINT;
-      const { problemId, compilerId, source } = req.body;
-  
+      const { problemId, compilerId, source,tests } = req.body;
+      console.log("Submitting Solution")
+       
       const submissionData = {
         problemId,
         compilerId,
-        source
+        source,
+        tests
       };
-  
+      console.log(submissionData);
+      console.log(`${endpoint}/api/v4/submissions?access_token=${accessToken}`);
       const response = await axios.post(
         `${endpoint}/api/v4/submissions?access_token=${accessToken}`,
         submissionData
       );
-  
+      console.log("Response Received");
+
       if (response.status === 201) {
         const submissionData = response.data;
         // Check if the submission is correct
-        if (submissionData.status === 0) {
-          res.status(200).json({ message: 'Success', data: submissionData });
-        } else {
-          res.status(200).json({ message: 'Wrong', data: submissionData });
+        console.log(response.data);
+        
+    try {
+      const submissionIds=[response.data.id]
+      console.log("Fetching submission details")
+      const response2 = await axios.get(
+        `${endpoint}/api/v4/submissions?ids=${submissionIds[0].toString()}&access_token=${accessToken}`
+      
+      );
+      console.log("response received");
+      if (response2.status === 200) {
+        console.log(response2.data.items[0].uri); // list of submissions in JSON
+        let result="";
+        setTimeout(async() => {
+          result=await getResult(response2.data.items[0].uri);
+          console.log("result:",result);
+          res.status(200).json({"Result":result});
+        }, 3000);
+      
+        
+      } else {
+        if (response2.status === 401) {
+          console.log('Invalid access token');
+        } else if (response2.status === 400) {
+          console.log(
+            `Error code: ${response2.data.error_code}, details available in the message: ${response2.data.message}`
+          );
         }
+        res.status(response2.status).json({ error: response2.data.message });
+      }
+    } catch (error) {
+      console.log('Connection problem');
+      res.status(500).json({ error: error.message });
+    }
       } else {
         if (response.status === 401) {
           res.status(401).json({ error: 'Invalid access token' });
@@ -339,7 +372,7 @@ export const submitSolution = async (req, res) => {
         }
       }
     } catch (error) {
-      res.status(500).json({ error: 'Connection problem' });
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -394,3 +427,23 @@ export const submitSolution = async (req, res) => {
     }
   };
   
+
+  const getResult=async(url)=>{
+    if(url==null){
+      return "Please provide URL";
+    }
+    try{
+      const response=await axios.get(url);
+      console.log(response.data.result.status);
+      console.log(response.data.result.status.name);
+      if(response.status==200){
+        return response.data.result.status.name;
+      }
+      else{
+        return "error"
+      }
+    }
+    catch(error){
+      return "Something went wrong";
+    }
+  }
