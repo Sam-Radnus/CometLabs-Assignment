@@ -8,7 +8,7 @@ import helmet from "helmet"
 import path from "path"
 import morgan from "morgan";
 import { test, signup, login } from "./controllers/auth.js";
-import { getProblemById,testAdmin,createProblem,listProblems, updateProblem, deleteProblem, createTestCase, submitSolution } from "./controllers/problem.js"
+import { getProblemById,testAdmin,createProblem,listProblems, updateProblem, deleteProblem,addTestCase, createTestCase, submitSolution} from "./controllers/problem.js"
 import { authMiddleware } from "./middleware/auth.js"
 dotenv.config();
 const app = express();
@@ -41,4 +41,5 @@ app.get("/api/questions/:questionId",authMiddleware,getProblemById)
 app.get("/api/questions", authMiddleware, listProblems)
 app.put("/api/questions/:questionId", authMiddleware, updateProblem)
 app.delete("/api/questions/:questionId", authMiddleware, deleteProblem)
-app.post("/api/questions/:questionId/testcases", authMiddleware, createTestCase)
+//app.post("/api/questions/:questionId/testcases", authMiddleware, createTestCase)
+app.post("/api/questions/:questionId/addTestCase",authMiddleware,addTestCase)

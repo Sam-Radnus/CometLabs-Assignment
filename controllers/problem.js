@@ -342,4 +342,55 @@ export const submitSolution = async (req, res) => {
       res.status(500).json({ error: 'Connection problem' });
     }
   };
+
+  export const addTestCase = async (req, res) => {
+    const { input, output, timelimit, judgeId } = req.body;
+    const accessToken = process.env.ACCESS_TOKEN;
+    const endpoint = process.env.ENDPOINT;
+    const problemId = req.params.questionId;
+    console.log(problemId);
+    if(problemId==null){
+      res.status(400).json({error:"problem id is missing"})
+    }
+    const testcaseData = {
+      input,
+      output,
+      timelimit,
+      judgeId
+    };
+    if(input==null || output==null || timelimit==null || judgeId==null)
+    {
+    
+      res.status(400).json({error:"one or two fields are missing"});
+    }  
+    try {
+      console.log("Sending request");
+      console.log(`${endpoint}/api/v4/problems/${problemId}/testcases?access_token=${accessToken}`);
+      const response = await axios.post(
+        `${endpoint}/api/v4/problems/${problemId}/testcases?access_token=${accessToken}`,
+        testcaseData
+      );
+      console.log("Recieved response")
+      if (response.status === 201) {
+        console.log(response.data); // testcase data in JSON
+        res.status(201).json(response.data);
+      } else {
+        if (response.status === 401) {
+          console.log('Invalid access token');
+        } else if (response.status === 403) {
+          console.log('Access denied');
+        } else if (response.status === 404) {
+          console.log('Problem does not exist');
+        } else if (response.status === 400) {
+          console.log(
+            `Error code: ${response.data.error_code}, details available in the message: ${response.data.message}`
+          );
+        }
+        res.status(response.status).json({ error: response.data.message });
+      }
+    } catch (error) {
+      console.log('Connection problem');
+      res.status(500).json({ error: error.message });
+    }
+  };
   
