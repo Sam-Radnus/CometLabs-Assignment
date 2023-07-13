@@ -189,15 +189,20 @@ export const listProblems = async (req,res) => {
   
       if (response.status === 200) {
         console.log('Problem updated');
+        res.status(200).json({ response:"Problem updated" })
       } else {
         if (response.status === 401) {
           console.log('Invalid access token');
+          res.status(401).json({ response:"Invalid access token" })
         } else if (response.status === 403) {
           console.log('Access denied');
+          res.status(403).json({ response:"Access denied" })
         } else if (response.status === 404) {
           console.log('Problem does not exist');
+          res.status(404).json({ response:"Problem does not exis" })
         } else if (response.status === 400) {
           console.log(`Error code: ${response.data.error_code}, details available in the message: ${response.data.message}`);
+          res.status(400).json({ response:`Error code: ${response.data.error_code}, details available in the message: ${response.data.message}` })
         }
       }
     } catch (error) {
@@ -289,12 +294,16 @@ export const createTestCase = async (req,res  ) => {
       } else {
         if (response.status === 401) {
           console.log('Invalid access token');
+          res.status(401).json({response:'Invalid access token'})
         } else if (response.status === 403) {
           console.log('Access denied');
+          res.status(403).json({response:'Access denied'})
         } else if (response.status === 404) {
           console.log('Problem does not exist');
+          res.status(404).json({response:'Problem does not exist'})
         } else if (response.status === 400) {
           console.log(`Error code: ${response.data.error_code}, details available in the message: ${response.data.message}`);
+          res.status(400).json({response:`Error code: ${response.data.error_code}, details available in the message: ${response.data.message}`})
         }
       }
     } catch (error) {
