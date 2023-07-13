@@ -37,7 +37,7 @@ app.post("/api/questions/:questionId/submit", submitSolution)
 /* ROUTES FOR ADMIN ONLY  */
 
 app.post("/api/questions", authMiddleware, createProblem)
-app.post("/api/questions/:questionId",authMiddleware,getProblemById)
+app.get("/api/questions/:questionId",authMiddleware,getProblemById)
 app.get("/api/questions", authMiddleware, listProblems)
 app.put("/api/questions/:questionId", authMiddleware, updateProblem)
 app.delete("/api/questions/:questionId", authMiddleware, deleteProblem)

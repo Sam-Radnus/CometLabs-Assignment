@@ -76,7 +76,7 @@ const saveProblemInDatabase=async(problemData)=>{
     )
     
      const problem = new Problem({
-       id: Math.floor(Math.random() * 1000), // Generate a random ID or use your own logic to assign an ID
+       id:problemData.id , // Generate a random ID or use your own logic to assign an ID
        name:problemData.name,
        body:problemData.body,
        typeId:problemData.typeId,
@@ -147,12 +147,45 @@ export const listProblems = async (req,res) => {
     try {
       const accessToken = process.env.ACCESS_TOKEN;
       const endpoint = process.env.ENDPOINT;
-      const problemId = req.params.id;
-      const problemData = {
-        name: 'New name'
-      };
+      const problemId = req.params.questionId;
+      const {name,body,typeId,masterjudgeId,interactive}=req.body;
+      console.log(problemId);
+      const problem=await Problem.findOne({id:problemId});
+      const updateData={};
+      if(!problem){
+        res.status(401).json({"Error":"Problem Not Found"});
+      }
+       // Compare and update the properties if they are different
+    if (name!=null && name !== problem.name) {
+      problem.name = name;
+      updateData.name=name;
+    }
+
+    if (body!=null && body !== problem.body) {
+      problem.body = body;
+      updateData.body=body;
+    }
+
+    if (typeId!=null && typeId !== problem.typeId) {
+      problem.typeId = typeId;
+      updateData.typeId=typeId;
+    }
+
+    if (masterjudgeId!=null && masterjudgeId !== problem.masterjudgeId) {
+      problem.masterjudgeId = masterjudgeId;
+      updateData.masterjudgeId=masterjudgeId;
+    }
+
+    if (interactive!=null && interactive !== problem.interactive) {
+      problem.interactive = interactive;
+      updateData.interactive=interactive;
+    }
+
+    // Save the updated problem
+    await problem.save();
+
   
-      const response = await axios.put(`${endpoint}/api/v4/problems/${problemId}?access_token=${accessToken}`, problemData);
+      const response = await axios.put(`${endpoint}/api/v4/problems/${problemId}?access_token=${accessToken}`, updateData);
   
       if (response.status === 200) {
         console.log('Problem updated');
@@ -205,12 +238,19 @@ export const listProblems = async (req,res) => {
     try {
       const accessToken = process.env.ACCESS_TOKEN;
       const endpoint = process.env.ENDPOINT;
-      const problemId = req.params.id;
-  
+      const problemId = req.params.questionId;
+      console.log(problemId);
       const response = await axios.delete(`${endpoint}/api/v4/problems/${problemId}?access_token=${accessToken}`);
-  
+      
       if (response.status === 200) {
         console.log('Problem deleted');
+        const deletedProblem = await Problem.deleteOne({ id: problemId });
+
+        if (deletedProblem.deletedCount === 0) {
+          return res.status(404).json({ error: 'Problem not found' });
+        }
+    
+        res.status(200).json({ message: 'Problem deleted successfully' });
       } else {
         if (response.status === 401) {
           console.log('Invalid access token');
@@ -245,6 +285,7 @@ export const createTestCase = async (req,res  ) => {
   
       if (response.status === 201) {
         console.log(response.data); // testcase data
+        res.status(200).json({response:response.data})
       } else {
         if (response.status === 401) {
           console.log('Invalid access token');
@@ -258,6 +299,7 @@ export const createTestCase = async (req,res  ) => {
       }
     } catch (error) {
       console.log('Connection problem');
+      res.status(500).json({ error: error.message });
     }
   };
 
